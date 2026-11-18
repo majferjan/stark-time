@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#060b10" />
+  <meta name="description" content="A futuristic live countdown to Stark Time — 11 February 2027." />
+  <title>Stark Time — Countdown</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05090e;
+      --panel: #0a151d;
+      --line: rgba(125, 201, 224, .19);
+      --cyan: #70e6f4;
+      --cyan-soft: #9bdae1;
+      --orange: #ed9155;
+      --white: #eaf5f5;
+      --dim: #69838d;
+      --mono: "Bahnschrift", "Consolas", "Liberation Mono", monospace;
+      --ui: "Inter", "Segoe UI", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body { margin: 0; color: var(--white); font-family: var(--ui); min-height: 100svh; overflow-x: hidden; background:
+      radial-gradient(ellipse 52% 62% at 21% 51%, rgba(22,105,124,.20), transparent 70%),
+      radial-gradient(ellipse 40% 54% at 91% 6%, rgba(188,79,31,.09), transparent 75%),
+      linear-gradient(130deg, #081119 0%, #04080d 54%, #091015 100%); }
+    body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .20; background-image:
+      linear-gradient(rgba(98, 168, 189, .11) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(98,168,189,.11) 1px, transparent 1px);
+      background-size: 57px 57px;
+      mask-image: linear-gradient(90deg, black 0%, transparent 86%); }
+    body::after { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: .19;
+      background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,.27) 3px 4px); }
+    button { font: inherit; }
+    .shell { position: relative; z-index: 1; width: min(1440px, calc(100% - 100px)); min-height: 100svh; margin: 0 auto; display: flex; flex-direction: column; }
+    .topbar { padding: 39px 0 26px; display: flex; justify-content: space-between; gap: 24px; align-items: center; border-bottom: 1px solid var(--line); }
+    .identity { display: flex; align-items: center; gap: 14px; }
+    .mark { width: 36px; height: 36px; display: grid; place-items: center; color: var(--cyan); }
+    .mark svg { width: 36px; height: 36px; }
+    .brand { font-size: 13px; font-weight: 800; letter-spacing: .29em; color: #e0f6fa; }
+    .brand-sub { color: var(--dim); font: 9px var(--mono); letter-spacing: .18em; margin-top: 5px; }
+    .status { display: flex; align-items: center; gap: 14px; font: 11px var(--mono); letter-spacing: .14em; color: #a4c5c9; }
+    .status .dot { width: 7px; height: 7px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 15px 4px rgba(84,228,244,.38); animation: blink 2.5s ease-in-out infinite; }
+    .status .separator { height: 16px; width: 1px; background: var(--line); }
+    .status .mode { color: var(--orange); }
+    .main { flex: 1; display: grid; grid-template-columns: minmax(420px, .98fr) minmax(450px, 1.02fr); gap: min(7vw, 106px); align-items: center; padding: 45px 0 60px; }
+    .left-panel { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+    .section-index { align-self: flex-start; color: var(--dim); font: 10px var(--mono); letter-spacing: .17em; display: flex; align-items: center; gap: 12px; width: 100%; }
+    .section-index::after { content: ""; height: 1px; flex: 1; background: linear-gradient(90deg, var(--line), transparent); }
+    .reactor-wrap { position: relative; width: min(100%, 555px); aspect-ratio: 1; margin: 14px auto 6px; filter: drop-shadow(0px 0px 56px rgba(58,194,216,.075)); }
+    .reactor-wrap::before { content: ""; position: absolute; inset: 13%; border-radius: 50%; background: radial-gradient(circle, rgba(49,153,183,.115), transparent 69%); filter: blur(25px); }
+    .reactor { display: block; width: 100%; height: 100%; overflow: visible; }
+    .orbit-slow { animation: spin 80s linear infinite; transform-origin: 250px 250px; }
+    .orbit-reverse { animation: spinback 54s linear infinite; transform-origin: 250px 250px; }
+    .orbit-fast { animation: spin 26s linear infinite; transform-origin: 250px 250px; }
+    .core-halo { animation: breathe 4s ease-in-out infinite; transform-origin: center; }
+    .core-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 55%; text-align: center; }
+    .core-tiny { font: 10px var(--mono); letter-spacing: .27em; color: #7cb1bc; }
+    .core-day { font: 800 clamp(80px, 8.4vw, 135px)/1 var(--ui); letter-spacing: -.095em; text-indent: -.095em; color: #d9f9ff;
+      text-shadow: 0 0 32px rgba(60, 213, 237,.35); font-variant-numeric: tabular-nums; margin: 10px 0 8px; }
+    .core-unit { color: var(--cyan); font: 11px var(--mono); letter-spacing: .25em; }
+    .core-line { width: 40px; height: 1px; background: var(--orange); margin: 17px auto; box-shadow: 0 0 12px var(--orange); }
+    .core-small { color: #658c98; font: 9px var(--mono); letter-spacing: .13em; }
+    .edge-label { position: absolute; font: 9px var(--mono); letter-spacing: .13em; color: #668993; }
+    .edge-label.top { top: 17%; right: -1%; }
+    .edge-label.bottom { bottom: 17%; left: 0; }
+    .reactor-footer { display: flex; align-items: center; justify-content: space-between; width: 100%; padding-top: 9px; color: #7d9aa2; font: 10px var(--mono); letter-spacing: .13em; }
+    .reactor-footer .signal { display: flex; gap: 4px; align-items: end; height: 15px; }
+    .reactor-footer .signal span { width: 2px; height: 6px; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: signal 1.5s ease-in-out infinite alternate; }
+    .reactor-footer .signal span:nth-child(2) { height: 12px; animation-delay: -.4s; }
+    .reactor-footer .signal span:nth-child(3) { height: 8px; animation-delay: -.8s; }
+    .reactor-footer .signal span:nth-child(4) { height: 14px; animation-delay: -.2s; }
+    .content { max-width: 610px; min-width: 0; padding: 0 0 6px; }
+    .eyebrow { color: var(--cyan); font: 11px var(--mono); letter-spacing: .24em; display: flex; gap: 11px; align-items: center; margin-bottom: 25px; }
+    .eyebrow::before { content: ""; width: 24px; height: 2px; background: var(--orange); box-shadow: 0 0 12px rgba(237,145,85,.5); }
+    h1 { font: 850 clamp(74px, 7.8vw, 125px)/.89 var(--ui); letter-spacing: -.075em; margin: 0 0 29px -6px; color: #f1f6f5; }
+    h1 span { color: var(--orange); text-shadow: 0 0 37px rgba(237,145,85,.16); }
+    .subline { max-width: 480px; color: #8ba7b0; font-size: 13px; letter-spacing: .055em; line-height: 1.7; margin: 0 0 39px; }
+    .timer-heading { color: #aac4c9; display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 10px var(--mono); letter-spacing: .23em; margin: 0 0 13px; }
+    .timer-heading span:last-child { color: #64818b; letter-spacing: .08em; }
+    .timer { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+    .timebox { position: relative; min-width: 0; background: linear-gradient(160deg, rgba(23,47,60,.72), rgba(8,21,28,.88)); border: 1px solid rgba(119,198,215,.24);
+      padding: 22px 6px 16px; text-align: center; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px)); }
+    .timebox::before { content: ""; position: absolute; top: 0; left: 0; width: 24px; height: 2px; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+    .timebox:last-child::before { background: var(--orange); box-shadow: 0 0 12px var(--orange); }
+    .timebox-value { font: 700 clamp(30px, 3vw, 51px)/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.05em; color: #ecfeff; }
+    .timebox:last-child .timebox-value { color: #ffbe88; }
+    .timebox-label { color: #7ca4ae; font: 9px var(--mono); letter-spacing: .15em; margin-top: 13px; }
+    .statement { margin: 27px 0 0; font: 650 clamp(17px, 1.75vw, 25px)/1.5 var(--ui); letter-spacing: .04em; color: #d5e6e9; }
+    .statement strong { color: var(--cyan); font-weight: 750; }
+    .target { margin-top: 37px; border-top: 1px solid var(--line); padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .target-label { color: #63848d; font: 10px var(--mono); letter-spacing: .2em; margin-bottom: 9px; }
+    .target-date { color: #d6e7e9; font: 600 17px var(--mono); letter-spacing: .09em; }
+    .target-badge { border: 1px solid rgba(237,145,85,.38); color: #f0a875; background: rgba(237,145,85,.05); padding: 11px 13px; font: 10px var(--mono); letter-spacing: .12em; white-space: nowrap; }
+    .foot { padding: 24px 0 29px; border-top: 1px solid var(--line); color: #53717d; display: flex; justify-content: space-between; gap: 15px; font: 9px var(--mono); letter-spacing: .16em; }
+    .foot strong { color: #7396a1; font-weight: 400; }
+    .complete .eyebrow { color: var(--orange); }
+    .complete .statement strong { color: var(--orange); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spinback { to { transform: rotate(-360deg); } }
+    @keyframes blink { 50% { opacity: .43; } }
+    @keyframes breathe { 50% { opacity: .55; } }
+    @keyframes signal { to { height: 4px; opacity: .4; } }
+    @media (min-width: 1500px) { .main { gap: 104px; } }
+    @media (max-width: 1140px) {
+      .shell { width: min(100% - 66px, 980px); }
+      .main { grid-template-columns: minmax(340px, .9fr) minmax(390px, 1.1fr); gap: 32px; }
+      h1 { font-size: clamp(70px, 8.3vw, 102px); }
+      .timebox { padding-top: 19px; }
+      .timebox-value { font-size: clamp(26px, 3.45vw, 41px); }
+      .reactor-wrap { margin-top: 27px; }
+    }
+    @media (max-width: 790px) {
+      .shell { width: min(100% - 40px, 610px); }
+      .topbar { padding-top: 25px; padding-bottom: 21px; }
+      .brand { font-size: 11px; }
+      .status .separator, .status .mode { display: none; }
+      .status { font-size: 9px; }
+      .main { display: flex; flex-direction: column; gap: 16px; padding: 36px 0 58px; }
+      .left-panel { width: min(100%, 480px); align-self: center; }
+      .reactor-wrap { width: min(100%, 440px); margin-top: 5px; margin-bottom: -5px; }
+      .edge-label { display: none; }
+      .reactor-footer { padding-top: 0; }
+      .content { width: 100%; max-width: 560px; padding-top: 20px; }
+      .eyebrow { margin-bottom: 21px; }
+      h1 { font-size: clamp(75px, 16vw, 110px); margin-bottom: 21px; }
+      .subline { margin-bottom: 30px; }
+      .timebox-value { font-size: clamp(31px, 7.6vw, 51px); }
+      .statement { font-size: clamp(18px, 4.4vw, 24px); }
+      .foot { flex-wrap: wrap; }
+    }
+    @media (max-width: 420px) {
+      .shell { width: calc(100% - 30px); }
+      .brand { letter-spacing: .14em; }
+      .brand-sub { letter-spacing: .07em; }
+      .mark, .mark svg { width: 30px; height: 30px; }
+      .identity { gap: 9px; }
+      .status { letter-spacing: .03em; gap: 8px; }
+      .main { padding-top: 26px; }
+      .timebox { padding: 15px 2px 13px; }
+      .timebox-value { font-size: clamp(27px, 7.5vw, 34px); }
+      .timebox-label { font-size: 8px; letter-spacing: .07em; }
+      .timer { gap: 5px; }
+      .target-date { font-size: 14px; }
+      .target-badge { font-size: 8px; padding: 10px 8px; }
+      .foot { font-size: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="identity">
+        <div class="mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2 36 11v18L20 38 4 29V11L20 2Z" stroke="currentColor" stroke-width="1.4"/>
+            <path d="m12 26 8-14 8 14M16 23h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"/>
+            <path d="M20 2v5M36 20h-5M20 38v-5M4 20h5" stroke="#ED9155" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand">AETHER // SYSTEMS</div>
+          <div class="brand-sub">CHRONOMETRIC INTERFACE / 001</div>
+        </div>
+      </div>
+      <div class="status" aria-label="Countdown system active">
+        <span class="dot" aria-hidden="true"></span> SYSTEM ONLINE
+        <span class="separator" aria-hidden="true"></span>
+        <span class="mode">COUNTDOWN MODE</span>
+      </div>
+    </header>
+
+    <main class="main" id="countdown-page">
+      <section class="left-panel" aria-label="Visual countdown core">
+        <div class="section-index">01 / TEMPORAL CORE</div>
+        <div class="reactor-wrap">
+          <svg class="reactor" viewBox="0 0 500 500" aria-hidden="true">
+            <defs>
+              <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#1d6274"/><stop offset=".49" stop-color="#8bf4ff"/><stop offset="1" stop-color="#194151"/>
+              </linearGradient>
+              <linearGradient id="inner" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#14323f"/><stop offset=".54" stop-color="#4ebad1"/><stop offset="1" stop-color="#173947"/>
+              </linearGradient>
+              <radialGradient id="disc">
+                <stop offset="0" stop-color="#0f2a35" stop-opacity=".84"/>
+                <stop offset=".65" stop-color="#091822" stop-opacity=".96"/>
+                <stop offset="1" stop-color="#030a10"/>
+              </radialGradient>
+              <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <circle cx="250" cy="250" r="233" stroke="#3a6676" stroke-opacity=".20" stroke-width="1"/>
+            <circle cx="250" cy="250" r="223" stroke="#315766" stroke-opacity=".32" stroke-width="1" stroke-dasharray="1 8"/>
+            <g class="orbit-slow">
+              <circle cx="250" cy="250" r="214" stroke="#2f7888" stroke-opacity=".55" stroke-width="2" stroke-dasharray="90 22 6 12 22 30 10 25 2 40" fill="none"/>
+              <circle cx="250" cy="250" r="204" stroke="#66d6e8" stroke-opacity=".33" stroke-width="1" stroke-dasharray="1 15" fill="none"/>
+              <path d="M250 23v12M250 465v12M23 250h12M465 250h12" stroke="#76dce8" stroke-opacity=".8" stroke-width="1.8"/>
+            </g>
+            <g class="orbit-reverse">
+              <circle cx="250" cy="250" r="191" stroke="#b9eaff" stroke-opacity=".12" stroke-width="13" stroke-dasharray="1 30" fill="none" />
+              <circle cx="250" cy="250" r="179" stroke="#70dded" stroke-opacity=".52" stroke-width="2.5" stroke-dasharray="130 60 18 40 10 77" fill="none" />
+              <circle cx="250" cy="250" r="169" stroke="#ed9155" stroke-opacity=".8" stroke-width="2" stroke-dasharray="40 500 14 510" fill="none" filter="url(#glow)"/>
+            </g>
+            <g opacity=".56">
+              <path d="M250 75 374 126 425 250 374 374 250 425 126 374 75 250 126 126Z" fill="none" stroke="#3994a8" stroke-width="1.2"/>
+              <path d="M250 91 363 137 409 250 363 363 250 409 137 363 91 250 137 137Z" fill="none" stroke="#275669" stroke-width="1"/>
+            </g>
+            <g class="orbit-fast">
+              <circle cx="250" cy="250" r="159" stroke="#6edcea" stroke-opacity=".52" stroke-width="5" stroke-dasharray="4 11 1 24" fill="none"/>
+              <circle cx="250" cy="250" r="151" stroke="#e29256" stroke-opacity=".75" stroke-width="2" stroke-dasharray="20 800 10 900" fill="none"/>
+            </g>
+            <circle cx="250" cy="250" r="143" fill="url(#disc)" stroke="#6abed0" stroke-opacity=".55" stroke-width="1.5"/>
+            <circle class="core-halo" cx="250" cy="250" r="132" fill="none" stroke="url(#ring)" stroke-opacity=".20" stroke-width="18"/>
+            <circle cx="250" cy="250" r="131" fill="none" stroke="url(#inner)" stroke-width="2" stroke-opacity=".83"/>
+            <circle cx="250" cy="250" r="123" fill="none" stroke="#78d8e9" stroke-opacity=".12" stroke-width="1" stroke-dasharray="2 7"/>
+            <path d="M250 98v-22M250 402v22M98 250H76M402 250h22" stroke="#9af2ff" stroke-opacity=".70" stroke-width="3"/>
+            <path d="m132 132-12-12m248 248 12 12M368 132l12-12M132 368l-12 12" stroke="#ec995d" stroke-opacity=".52" stroke-width="2"/>
+            <circle cx="250" cy="250" r="112" fill="none" stroke="#60b9c9" stroke-opacity=".12" stroke-width="1"/>
+          </svg>
+          <div class="core-content">
+            <div class="core-tiny">T - MINUS</div>
+            <div class="core-day" id="core-days">---</div>
+            <div class="core-unit">DAYS REMAINING</div>
+            <div class="core-line" aria-hidden="true"></div>
+            <div class="core-small">CORE STATUS : NOMINAL</div>
+          </div>
+          <span class="edge-label top">SYS.01 / ACTIVE</span>
+          <span class="edge-label bottom">REACTOR // 072</span>
+        </div>
+        <div class="reactor-footer">
+          <span>FIELD INTEGRITY: STABLE</span>
+          <div class="signal" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <span>LIVE TELEMETRY</span>
+        </div>
+      </section>
+
+      <section class="content" aria-label="Stark Time live countdown">
+        <div class="eyebrow" id="heading-status">TARGET EVENT // 11.02.2027</div>
+        <h1>STARK<br><span>TIME.</span></h1>
+        <p class="subline">A new chapter is on the horizon. Every second brings us closer.</p>
+        <div class="timer-heading"><span>TIME REMAINING</span><span>LIVE / CET</span></div>
+        <div class="timer" role="timer" aria-label="Time remaining until Stark Time">
+          <div class="timebox"><div class="timebox-value" id="days">---</div><div class="timebox-label">DAYS</div></div>
+          <div class="timebox"><div class="timebox-value" id="hours">--</div><div class="timebox-label">HOURS</div></div>
+          <div class="timebox"><div class="timebox-value" id="minutes">--</div><div class="timebox-label">MINUTES</div></div>
+          <div class="timebox"><div class="timebox-value" id="seconds">--</div><div class="timebox-label">SECONDS</div></div>
+        </div>
+        <div class="statement" id="statement"><strong>Counting down</strong> — left until stark time.</div>
+        <div class="target">
+          <div>
+            <div class="target-label">TARGET DATE / LOCKED</div>
+            <div class="target-date">11 FEB 2027 / 00:00</div>
+          </div>
+          <div class="target-badge">EUROPE / PRAGUE</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot"><span>© <span id="year">2026</span> AETHER // ORIGINAL COUNTDOWN INTERFACE</span><span>DESIGNED FOR THE MOMENT <strong>•</strong> SYSTEM V1.0</span></footer>
+  </div>
+  <script>
+    // Midnight on 11 February 2027 in Prague (CET, UTC+01:00).
+    // An absolute timestamp ensures the same countdown in every visitor's timezone.
+    const deadline = new Date('2027-02-11T00:00:00+01:00').getTime();
+    const el = (id) => document.getElementById(id);
+    const pad = (num, length = 2) => String(num).padStart(length, '0');
+    let finished = false;
+
+    function updateCountdown() {
+      const remainingSeconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      const days = Math.floor(remainingSeconds / 86400);
+      const hours = Math.floor((remainingSeconds % 86400) / 3600);
+      const minutes = Math.floor((remainingSeconds % 3600) / 60);
+      const seconds = remainingSeconds % 60;
+
+      el('days').textContent = pad(days, 3);
+      el('core-days').textContent = pad(days, 3);
+      el('hours').textContent = pad(hours);
+      el('minutes').textContent = pad(minutes);
+      el('seconds').textContent = pad(seconds);
+
+      if (remainingSeconds === 0 && !finished) {
+        finished = true;
+        el('countdown-page').classList.add('complete');
+        el('heading-status').textContent = 'TARGET REACHED // 11.02.2027';
+        el('statement').innerHTML = '<strong>It’s time.</strong> Stark time has arrived.';
+        document.title = 'It’s Stark Time';
+      } else if (remainingSeconds > 0) {
+        const unit = (value, singular) => `${value} ${singular}${value === 1 ? '' : 's'}`;
+        el('statement').innerHTML = `<strong>${unit(days, 'day')}, ${unit(hours, 'hour')}, ${unit(minutes, 'minute')} and ${unit(seconds, 'second')}</strong> left until stark time.`;
+      }
+    }
+
+    el('year').textContent = new Date().getFullYear();
+    updateCountdown();
+    // Align updates to second boundaries while the page is visible.
+    setInterval(updateCountdown, 250);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
+  </script>
+</body>
+</html>
